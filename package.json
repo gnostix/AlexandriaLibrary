@@ -1,0 +1,25 @@
+{
+  "name": "alexandrialibrary",
+  "version": "1.0.0",
+  "description": "The Great Library of Alexandria",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "gnostix",
+  "license": "MIT",
+  "dependencies": {
+    "@truffle/hdwallet-provider": "^2.0.4",
+    "dotenv": "^10.0.0",
+    "web3": "^1.7.1"
+  },
+  "devDependencies": {
+    "chai": "^4.3.4",
+    "depcheck": "^1.4.2",
+    "solhint": "^3.3.6",
+    "truffle-plugin-verify": "^0.5.15"
+  }
+}
