@@ -12,6 +12,7 @@
   "author": "gnostix",
   "license": "MIT",
   "dependencies": {
+    "@openzeppelin/contracts": "^4.5.0",
     "@truffle/hdwallet-provider": "^2.0.4",
     "dotenv": "^10.0.0",
     "web3": "^1.7.1"
