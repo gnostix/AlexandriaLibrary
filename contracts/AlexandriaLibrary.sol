@@ -1,42 +1,148 @@
 // SPDX-License-Identifier: MIT
 pragma solidity <0.9.0;
 
+import "./BookRepository.sol";
+
 contract AlexandriaLibrary {
+    // The address of the Books Repository
+    BookRepository public bookRepo;
+
+    // The name of this Contract
     string public constant NAME = "The Great Library of Alexandria";
+
+    // The Contract's owner address
     address owner;
+
+    // Mapping from Owner to a list of books
     mapping(address => Book[]) public booksByOwner;
+
+    // mapping book by ID
+    mapping(uint256 => Book) bookIdByBook;
+
+    // Mapping from Book title to Book entity
     mapping(string => Book) public bookByTitle;
 
+    // Mapping for address by rented books
+    mapping(address => Book[]) public addressByRentedBooks;
+
+    // mapping for book by rented addresses
+    mapping(uint256 => address[]) bookIdByAddresses;
+
+    // mapping deadline per book rented (0x2ww2 => 1 => timestamp)
+    mapping(address => mapping(uint256 => uint256)) addressByRentedBookByDeadline;
+
+    // The book entity
     struct Book {
+        uint256 bookId;
         string title;
-        string ipfsurl;
         address bookOwner;
     }
 
-    event BookAddedToLibrary(address bookOwner, string bookTitle);
+    // Event fired when  new book is registered for sales
+    event BookAddedToLibrary(string bookTitle);
 
-    constructor() {
+    /**
+     * Garanties that this contract is the owner of this specific NFT book ID
+     * @param _bookID the NFT ID for this book
+     */
+    modifier contractIsBookOwner(uint256 _bookID) {
+        address bookOwnerAddr = bookRepo.ownerOf(_bookID);
+        require(
+            bookOwnerAddr == address(this),
+            "The book is not under Warehouse ownership"
+        );
+        _;
+    }
+
+    /**
+     * Garanties that this msg.sender is the tokenid owner
+     * @param tokenId takes as param the tokenId
+     */
+    modifier ownerOfTokenId(uint256 tokenId) {
+        address tokenOwner = bookRepo.ownerOf(tokenId);
+        require(tokenOwner == msg.sender, "You 're not the owner of this NFT!");
+        _;
+    }
+
+    constructor(address _bookRepo) {
+        bookRepo = BookRepository(_bookRepo);
         owner = msg.sender;
     }
 
-    function addBook(string memory title, string memory ipfsUrl) public returns (bool) {
-        Book memory newBook = Book(title, ipfsUrl, msg.sender);
-        booksByOwner[msg.sender].push(newBook);
+    function addBook(uint256 bookId, string memory title)
+        public
+        contractIsBookOwner(bookId)
+        returns (bool)
+    {
+        Book memory newBook = Book(bookId, title, address(this));
+        booksByOwner[address(this)].push(newBook);
         bookByTitle[title] = newBook;
+        bookIdByBook[bookId] = newBook;
 
-        emit BookAddedToLibrary(msg.sender, title);
+        emit BookAddedToLibrary(title);
 
         return true;
+    }
+
+    /**
+     * Rent a book for a given amount and for a specific time
+     * @param bookId get as parameetr the bookId
+     */
+    function rentBook(uint256 bookId) public payable returns (string memory) {
+        require(msg.value >= 1 ether, "This book will cost 1 ether to rent");
+        
+        Book memory book = bookIdByBook[bookId];
+        require(book.bookId != 0);
+
+        uint256 timeNow = block.timestamp;
+        uint256 fiveMinutesRentDeadline = timeNow + 300 seconds;
+
+        
+        addressByRentedBooks[msg.sender].push(book);
+        bookIdByAddresses[bookId].push(msg.sender);
+
+        addressByRentedBookByDeadline[msg.sender][
+            bookId
+        ] = fiveMinutesRentDeadline;
+
+        return getBookTokenUrl(bookId);
+    }
+
+    /**
+    * Stop renting the specific book. In this case you get back 50% of your deposit
+     */
+    function stopRentingBook(uint bookId) public payable returns(bool){
+        // TODO
+
+    }
+
+    /**
+     * Get for a NFT book ID the token URL
+     */
+    function getBookTokenUrl(uint256 tokenId)
+        public
+        view
+        ownerOfTokenId(tokenId)
+        returns (string memory)
+    {
+        return bookRepo.tokenURI(tokenId);
+    }
+
+    function getMyRentedBooks() public view returns (Book[] memory) {
+        return addressByRentedBooks[msg.sender];
     }
 
     function getMyBooks() public view returns (Book[] memory) {
         return booksByOwner[msg.sender];
     }
 
-    function getBooksByOwner(address bookOwner) public view returns (Book[] memory) {
+    function getBooksByOwner(address bookOwner)
+        public
+        view
+        returns (Book[] memory)
+    {
         return booksByOwner[bookOwner];
     }
-
 
     function getBookByTitle(string memory title)
         public
