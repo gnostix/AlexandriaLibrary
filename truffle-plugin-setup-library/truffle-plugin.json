@@ -1,0 +1,5 @@
+{
+    "commands": {
+      "lala": "setup_library.js"
+    }
+  }

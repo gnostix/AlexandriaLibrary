@@ -21,6 +21,7 @@
     "chai": "^4.3.4",
     "depcheck": "^1.4.2",
     "solhint": "^3.3.6",
-    "truffle-plugin-verify": "^0.5.15"
+    "truffle-plugin-verify": "^0.5.15",
+    "truffle-plugin-setup-library": "file:./truffle-plugin-setup-library"
   }
 }

@@ -43,10 +43,10 @@ contract AlexandriaLibrary {
 
     /**
      * Garanties that this contract is the owner of this specific NFT book ID
-     * @param _bookID the NFT ID for this book
+     * @param _bookId the NFT ID for this book
      */
-    modifier contractIsBookOwner(uint256 _bookID) {
-        address bookOwnerAddr = bookRepo.ownerOf(_bookID);
+    modifier contractIsBookOwner(uint256 _bookId) {
+        address bookOwnerAddr = bookRepo.ownerOf(_bookId);
         require(
             bookOwnerAddr == address(this),
             "The book is not under Warehouse ownership"
@@ -85,19 +85,36 @@ contract AlexandriaLibrary {
     }
 
     /**
+     * Buy a new book
+     * @param bookId add this param in order to buy the book (as NFT)
+     */
+    function buyBook(uint256 bookId) public payable returns (string memory) {
+        require(msg.value >= 1 ether, "This book will cost 1 ether to buy");
+
+        Book memory book = bookIdByBook[bookId];
+        require(book.bookId != 0);
+
+        addressByRentedBooks[msg.sender].push(book);
+        bookIdByAddresses[bookId].push(msg.sender);
+
+        bookRepo.transferFrom(address(this), msg.sender, bookId);
+        return getBookTokenUrl(bookId);
+    }
+
+    /**
      * Rent a book for a given amount and for a specific time
      * @param bookId get as parameetr the bookId
      */
     function rentBook(uint256 bookId) public payable returns (string memory) {
         require(msg.value >= 1 ether, "This book will cost 1 ether to rent");
-        
+
         Book memory book = bookIdByBook[bookId];
         require(book.bookId != 0);
 
+        // not used currently. Is a place holder
         uint256 timeNow = block.timestamp;
         uint256 fiveMinutesRentDeadline = timeNow + 300 seconds;
 
-        
         addressByRentedBooks[msg.sender].push(book);
         bookIdByAddresses[bookId].push(msg.sender);
 
@@ -105,15 +122,24 @@ contract AlexandriaLibrary {
             bookId
         ] = fiveMinutesRentDeadline;
 
+        bookRepo.transferFrom(address(this), msg.sender, bookId);
         return getBookTokenUrl(bookId);
     }
 
     /**
-    * Stop renting the specific book. In this case you get back 50% of your deposit
+     * Stop renting the specific book. In this case you get back 50% of your deposit.
+     * Or if the time of deadline has passed then you don't get any refund
      */
-    function stopRentingBook(uint bookId) public payable returns(bool){
-        // TODO
-
+    function stopRentingBook(uint256 bookId) public {
+        if (
+            addressByRentedBookByDeadline[msg.sender][bookId] < block.timestamp
+        ) {
+            delete addressByRentedBookByDeadline[msg.sender][bookId];
+            payable(msg.sender).transfer(1 ether);
+        } else {
+            // do not return any ether since the deadline has passed
+            delete addressByRentedBookByDeadline[msg.sender][bookId];
+        }
     }
 
     /**

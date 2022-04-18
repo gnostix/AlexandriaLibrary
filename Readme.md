@@ -14,6 +14,12 @@ Business steps:
  - `truffle migrate --reset development`  # --reset only for re-deployments
  - `truffle console --network development`
  
+Run script guide:
+    - `truffle(development)> migrate --reset`
+    - `truffle(development)>  exec scripts/setup-library.js`
+
+ OR follow step by step guide, bellow:
+
  Get instance of each contract
  - `let bookRepo = await BookRepository.deployed()`
  - `let alexandria = await AlexandriaLibrary.deployed()`
@@ -26,7 +32,9 @@ Add book in AlexandriaLibrary in order to be in market place for sale or  rent
  - `alexandria.addBook(1, "Java for the impatient")`
  - `alexandria.getBookByTitle("Java for the impatient")`
 
- - let lib = await AlexandriaLibrary.deployed()
- - lib.addBook("the second  book title", "the second  book ipfs url")
- - lib.getBooksByOwner()
- - lib.getBookByTitle('the second  book title')
+Rent a book
+ - `alexandria.buyBook(1, {value: 1000000000000000000})`
+ - `alexandria.getBookTokenUrl(1)`
+ - `bookRepo.rep.ownerOf(1)`
+
+
