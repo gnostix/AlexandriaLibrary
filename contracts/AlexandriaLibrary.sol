@@ -97,7 +97,7 @@ contract AlexandriaLibrary {
         require(book.bookId != 0, "This book is not found!");
 
         // remove bookId by the same index
-       //  delete booksByOwner[address(this)][bookId];
+        removeBookIdFromSales(bookId, address(this));
 
         // add bookId to new owner by the same index, for fast deletion
         booksByOwner[msg.sender].push(bookId);
@@ -105,6 +105,22 @@ contract AlexandriaLibrary {
 
         bookRepo.transferFrom(address(this), msg.sender, bookId);
         return getBookTokenUrl(bookId);
+    }
+
+    function removeBookIdFromSales(uint256 bookId, address bookOwner) internal {
+        uint256[] memory bookIds = booksByOwner[bookOwner];
+        uint256 length = bookIds.length - 1;
+        uint256[] memory newBookIds = new uint256[](length);
+
+        uint256 c = 0;
+        for (uint256 i = 0; i < bookIds.length; i++) {
+            uint256 _bookId = bookIds[i];
+            if (bookId != _bookId) {
+                newBookIds[c] = bookIds[i];
+                c++;
+            }
+        }
+        booksByOwner[bookOwner] = bookIds;
     }
 
     /**
@@ -182,7 +198,7 @@ contract AlexandriaLibrary {
         uint256[] memory bookIds = booksByOwner[bookOwner];
         books = new Book[](bookIds.length);
         for (uint256 i = 0; i < bookIds.length; i++) {
-            uint bookId = bookIds[i];
+            uint256 bookId = bookIds[i];
             require(bookId != 0, " Book id with zero id");
             Book memory book = bookIdByBook[bookId];
             books[i] = book;
@@ -191,6 +207,13 @@ contract AlexandriaLibrary {
         return books;
     }
 
+    function getBooksIdsByOwner(address bookOwner)
+        public
+        view
+        returns (uint256[] memory books)
+    {
+        books = booksByOwner[bookOwner];
+    }
 
     function getBookByTitle(string memory title)
         public

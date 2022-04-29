@@ -39,14 +39,14 @@ module.exports = async function(callback) {
 
 	console.log(" buy two books ");
 
-	let booksOfContract = await alexandria.getBooksByOwner(alexandria.address);
-	console.log(`books of Contract owner ${booksOfContract} `);
+	// let booksOfContract = await alexandria.getBooksByOwner(alexandria.address);
+	// console.log(`books of Contract owner ${booksOfContract} `);
 
-	let booksOfFirstAccount = await alexandria.getBooksByOwner(accounts[1]);
-	console.log(`books of first account ${accounts[1]} : ${booksOfFirstAccount} `);
+	// let booksOfFirstAccount = await alexandria.getBooksByOwner(accounts[1]);
+	// console.log(`books of first account ${accounts[1]} : ${booksOfFirstAccount} `);
 
-	let booksOfSecondAccount = await alexandria.getBooksByOwner(accounts[2]);
-	console.log(`books of second account ${accounts[2]} : ${booksOfSecondAccount} `);
+	// let booksOfSecondAccount = await alexandria.getBooksByOwner(accounts[2]);
+	// console.log(`books of second account ${accounts[2]} : ${booksOfSecondAccount} `);
 
 	callback();
 }
