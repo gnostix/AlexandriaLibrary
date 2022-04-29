@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity <0.9.0;
+pragma experimental ABIEncoderV2;
 
 import "./BookRepository.sol";
 
@@ -13,17 +14,16 @@ contract AlexandriaLibrary {
     // The Contract's owner address
     address owner;
 
-    // Mapping from Owner to a list of books
-    mapping(address => Book[]) public booksByOwner;
+    Book[] public booksForSale;
+
+    // Mapping from Owner to a list of books ids
+    mapping(address => uint256[]) public booksByOwner;
 
     // mapping book by ID
     mapping(uint256 => Book) bookIdByBook;
 
     // Mapping from Book title to Book entity
     mapping(string => Book) public bookByTitle;
-
-    // Mapping for address by rented books
-    mapping(address => Book[]) public addressByRentedBooks;
 
     // mapping for book by rented addresses
     mapping(uint256 => address[]) bookIdByAddresses;
@@ -69,15 +69,17 @@ contract AlexandriaLibrary {
         owner = msg.sender;
     }
 
-    function addBook(uint256 bookId, string memory title)
+    function addBookForSale(uint256 bookId, string memory title)
         public
         contractIsBookOwner(bookId)
         returns (bool)
     {
         Book memory newBook = Book(bookId, title, address(this));
-        booksByOwner[address(this)].push(newBook);
+        booksByOwner[address(this)].push(bookId);
         bookByTitle[title] = newBook;
         bookIdByBook[bookId] = newBook;
+
+        booksForSale.push(newBook);
 
         emit BookAddedToLibrary(title);
 
@@ -92,9 +94,13 @@ contract AlexandriaLibrary {
         require(msg.value >= 1 ether, "This book will cost 1 ether to buy");
 
         Book memory book = bookIdByBook[bookId];
-        require(book.bookId != 0);
+        require(book.bookId != 0, "This book is not found!");
 
-        addressByRentedBooks[msg.sender].push(book);
+        // remove bookId by the same index
+       //  delete booksByOwner[address(this)][bookId];
+
+        // add bookId to new owner by the same index, for fast deletion
+        booksByOwner[msg.sender].push(bookId);
         bookIdByAddresses[bookId].push(msg.sender);
 
         bookRepo.transferFrom(address(this), msg.sender, bookId);
@@ -115,7 +121,7 @@ contract AlexandriaLibrary {
         uint256 timeNow = block.timestamp;
         uint256 fiveMinutesRentDeadline = timeNow + 300 seconds;
 
-        addressByRentedBooks[msg.sender].push(book);
+        // booksByOwner[msg.sender][bookId] = bookId;
         bookIdByAddresses[bookId].push(msg.sender);
 
         addressByRentedBookByDeadline[msg.sender][
@@ -154,21 +160,37 @@ contract AlexandriaLibrary {
         return bookRepo.tokenURI(tokenId);
     }
 
-    function getMyRentedBooks() public view returns (Book[] memory) {
-        return addressByRentedBooks[msg.sender];
+    // to be defined
+    function getMyRentedBooks() public view returns (Book[] memory books) {
+        uint256[] memory bookIds = booksByOwner[msg.sender];
+        for (uint256 i = 0; i < bookIds.length; i++) {
+            books[i] = bookIdByBook[bookIds[i]];
+        }
+
+        return books;
     }
 
-    function getMyBooks() public view returns (Book[] memory) {
-        return booksByOwner[msg.sender];
+    function getMyBooks() public view returns (Book[] memory books) {
+        books = getBooksByOwner(msg.sender);
     }
 
     function getBooksByOwner(address bookOwner)
         public
         view
-        returns (Book[] memory)
+        returns (Book[] memory books)
     {
-        return booksByOwner[bookOwner];
+        uint256[] memory bookIds = booksByOwner[bookOwner];
+        books = new Book[](bookIds.length);
+        for (uint256 i = 0; i < bookIds.length; i++) {
+            uint bookId = bookIds[i];
+            require(bookId != 0, " Book id with zero id");
+            Book memory book = bookIdByBook[bookId];
+            books[i] = book;
+        }
+
+        return books;
     }
+
 
     function getBookByTitle(string memory title)
         public

@@ -24,7 +24,7 @@ contract BookRepository is ERC721URIStorage, Ownable {
         _;
     }
 
-    function sellItem(address buyer, string memory tokenURI)
+    function mintBook(address buyer, string memory tokenURI)
         public
         contractActivated
         returns (uint256)
