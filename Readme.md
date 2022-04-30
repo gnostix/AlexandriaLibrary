@@ -4,7 +4,7 @@
  # AlexandriaLibrary
  
  The idea is as: We have a books warehouse where we mint NFT books. Then if we need for a book to be on sale, then we give ownership of this newly minted book, to the warehouse in order to add this for sale.
- As goal we want to be able to sale books and also rent them for a specific period of time which after that the user should not have more access to the NFT book. This NFT book shouldbe able for a specific time in terms of block numbers.
+ As goal we want to be able to sale books and also rent them for a specific period of time which after that the user should not have more access to the NFT book. This NFT book should be available for a specific time in terms of block numbers.
 
 Business steps:
   - Mint a new Book in the BookRepository contract, and add as owner the AlexandriaLibrary contract. This in order for the latest, to be able and sale or rent the book to users.
