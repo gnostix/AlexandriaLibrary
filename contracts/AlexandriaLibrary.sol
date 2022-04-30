@@ -96,10 +96,15 @@ contract AlexandriaLibrary {
         Book memory book = bookIdByBook[bookId];
         require(book.bookId != 0, "This book is not found!");
 
+        // set the new book owner in our library
+        book.bookOwner = msg.sender;
+        bookIdByBook[bookId] = book;
+
         // remove bookId by the same index
         removeBookIdFromSales(bookId, address(this));
 
         // add bookId to new owner by the same index, for fast deletion
+
         booksByOwner[msg.sender].push(bookId);
         bookIdByAddresses[bookId].push(msg.sender);
 
@@ -120,7 +125,7 @@ contract AlexandriaLibrary {
                 c++;
             }
         }
-        booksByOwner[bookOwner] = bookIds;
+        booksByOwner[bookOwner] = newBookIds;
     }
 
     /**
