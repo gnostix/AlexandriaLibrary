@@ -37,4 +37,10 @@ Rent a book
  - `alexandria.getBookTokenUrl(1)`
  - `bookRepo.rep.ownerOf(1)`
 
-
+Api calls for DApp
+ - Add book
+ - Buy book
+ - Get my books or get books of `address`
+ - Get book Ids by address `getBooksIdsByOwner`
+ - Get book by title `getBookByTitle`
+ - Get book token url by book id `getBookTokenUrl`
